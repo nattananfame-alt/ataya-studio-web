@@ -1,142 +1,85 @@
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ATAYA STUDIO | Bridal & Hijab Beauty</title>
-<link rel="manifest" href="./manifest.webmanifest">
-<meta name="theme-color" content="#241B20">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="ATAYA STUDIO">
-<link rel="apple-touch-icon" href="./ataya-icon-512.png">
-<link rel="icon" type="image/png" href="./ataya-icon.png">
-<style>
-:root{--rose:#b85f79;--deep:#74394d;--pale:#fff1f4;--line:#eed8de}
-*{box-sizing:border-box}
-body{margin:0;background:linear-gradient(140deg,#fff5f6,#f9e4e9);font-family:Tahoma,'Noto Sans Thai',sans-serif;color:#553d45}
-button,input,select{font:inherit}
-button{cursor:pointer}
-.app{max-width:480px;margin:auto;min-height:100dvh;background:#fffafb;box-shadow:0 0 40px #b85f7925;padding-bottom:80px}
-.hero{background:linear-gradient(130deg,#f9d9e1,#fff6f6);padding:35px 22px 26px;text-align:center}
-.brand{font:42px Georgia,serif;letter-spacing:4px;color:var(--deep)}
-.sub{font:12px Georgia,serif;letter-spacing:2px}
-.tag{font-size:13px;margin-top:13px}
-.content{padding:20px}
-.heading{font-size:20px;font-weight:bold;color:var(--deep);margin:8px 0 15px}
-.muted{font-size:13px;color:#947e85}
-.card{background:white;border:1px solid var(--line);border-radius:17px;padding:16px;margin:12px 0;box-shadow:0 5px 16px #b85f790d}
-.service{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.price{font-weight:bold;color:var(--rose)}
-.btn{background:var(--rose);color:white;border:0;border-radius:12px;padding:13px 18px;width:100%;margin-top:12px}
-.outline{background:white;border:1px solid var(--rose);color:var(--rose)}
-.small{width:auto;padding:8px 12px;margin:0}
-.tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(480px,100%);background:white;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:9px}
-.tabs button{background:none;border:0;color:#806a72;font-size:12px}
-.tabs button.active{color:var(--rose);font-weight:bold}
-.field{display:block;margin:14px 0;font-size:14px}
-.field input,.field select{width:100%;margin-top:6px;border:1px solid var(--line);border-radius:10px;padding:12px;background:white}
-.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-.slot{border:1px solid var(--line);background:white;padding:12px 5px;border-radius:10px}
-.slot.selected{background:var(--rose);color:white}
-.pill{display:inline-block;background:#fce4eb;color:var(--deep);padding:6px 10px;border-radius:20px;font-size:12px}
-.status{display:flex;gap:6px;flex-wrap:wrap}
-.status button{border:1px solid var(--line);background:#fff;padding:6px;border-radius:8px;font-size:12px}
-.status button.active{background:var(--rose);color:white}
-.center{text-align:center}
-.big{font:52px Georgia,serif;color:var(--deep)}
-.empty{padding:35px;text-align:center;color:#9b8a90}
-.adminstat{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.adminstat .card{text-align:center;margin:0}
-.adminstat strong{font-size:26px;color:var(--deep)}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>ATAYA STUDIO</title>
+
+  <meta name="theme-color" content="#74394d">
+
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon"
+        href="./ataya-icon-512.png">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(
+        135deg,
+        #fff1f4,
+        #f4d6df
+      );
+      font-family: Tahoma, sans-serif;
+      color: #74394d;
+      text-align: center;
+    }
+
+    .card {
+      width: 90%;
+      max-width: 400px;
+      background: white;
+      padding: 35px 25px;
+      border-radius: 22px;
+      box-shadow: 0 12px 35px #74394d20;
+    }
+
+    h1 {
+      font-family: Georgia, serif;
+      letter-spacing: 3px;
+      font-size: 30px;
+    }
+
+    p {
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    a {
+      display: block;
+      padding: 14px;
+      margin-top: 20px;
+      background: #b85f79;
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+    }
+  </style>
+
+  <script>
+    window.location.replace("./login.html");
+  </script>
 </head>
+
 <body>
-<div id="root" class="app"></div>
-<script>
-const services=[
-{name:'แต่งหน้าคลุมผม',desc:'ลุคสวยละมุน เหมาะกับทุกโอกาส',price:1590},
-{name:'แต่งหน้าเจ้าสาว',desc:'งานแต่ง งานพิธี และวันสำคัญ',price:2590},
-{name:'แต่งหน้าพรีเวดดิ้ง',desc:'พร้อมสำหรับการถ่ายภาพ',price:3590},
-{name:'แต่งหน้าออกงาน',desc:'สวยมั่นใจในวันพิเศษ',price:1290},
-{name:'จัดแต่งผ้าคลุม',desc:'จัดทรงผ้าคลุมอย่างประณีต',price:790},
-{name:'ทดลองแต่งหน้า',desc:'ทดลองลุคก่อนวันจริง',price:990}
-];
-const packages=[
-{name:'Basic',extra:0,desc:'แต่งหน้าคลุมผม'},
-{name:'Premium',extra:1000,desc:'แต่งหน้าคลุมผม + ทำผม'},
-{name:'Luxury',extra:2000,desc:'แต่งหน้าคลุมผม + ทำผม + ดูแลลุค'}
-];
-const times=['08:30','09:30','10:30','11:30','12:30','13:30','14:30','15:30','16:30'];
-const statuses=['รอยืนยัน','ยืนยันแล้ว','กำลังให้บริการ','เสร็จสิ้น','ยกเลิก'];
-let bookings=JSON.parse(localStorage.getItem('veilora_bookings')||'[]');
-let page='home',selected=0,pkg=0,date='',time='',name='',phone='',last=null;
-const root=document.getElementById('root');
-const save=()=>localStorage.setItem('veilora_bookings',JSON.stringify(bookings));
-const money=n=>n.toLocaleString('th-TH')+' ฿';
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
-const today=()=>{
-let d=new Date();
-return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-};
-function nav(p){page=p;render();window.scrollTo(0,0)}
-function head(){
-return `<div class="hero"><div style="font-size:24px">♕ ♡</div><div class="brand">ATAYA STUDIO</div><div class="sub">BRIDAL & HIJAB BEAUTY</div><div class="tag">สวยสง่าในวันสำคัญ ในแบบที่เป็นคุณ ♡</div></div>`
-}
-function foot(){
-return `<div class="tabs">${[['home','⌂','หน้าหลัก'],['bookings','▦','การจอง'],['admin','⚙','แอดมิน']].map(([p,i,t])=>`<button class="${page===p?'active':''}" onclick="nav('${p}')"><div style="font-size:23px">${i}</div>${t}</button>`).join('')}</div>`
-}
-function render(){
-let h=head();
-if(page==='home'){
-h+=`<main class="content"><div class="heading">บริการของเรา ♡</div><div class="muted">เลือกบริการที่เหมาะกับวันพิเศษของคุณ</div>${services.map((s,i)=>`<div class="card service"><div><strong>${esc(s.name)}</strong><div class="muted">${esc(s.desc)}</div><div class="price">เริ่มต้น ${money(s.price)}</div></div><button class="btn small" onclick="selected=${i};nav('detail')">ดูบริการ</button></div>`).join('')}</main>`
-}
-else if(page==='detail'){
-let s=services[selected];
-h+=`<main class="content"><button class="btn outline small" onclick="nav('home')">← กลับ</button><div class="heading" style="margin-top:20px">${esc(s.name)}</div><div class="card center" style="background:linear-gradient(140deg,#f7d6df,#fff)"><div style="font-size:70px">♕</div><div>${esc(s.desc)}</div></div><div class="heading">เริ่มต้น ${money(s.price)}</div><p>บริการดูแลความงามสำหรับวันสำคัญ เลือกแพ็กเกจและช่วงเวลาที่สะดวกได้ด้วยตนเอง</p><button class="btn" onclick="nav('schedule')">เลือกแพ็กเกจและวันเวลา →</button></main>`
-}
-else if(page==='schedule'){
-h+=`<main class="content"><div class="heading">เลือกแพ็กเกจและจองวันเวลา</div><div class="muted">${esc(services[selected].name)}</div>${packages.map((p,i)=>`<div class="card service" onclick="pkg=${i};render()" style="border-color:${pkg===i?'#b85f79':''};cursor:pointer"><div><strong>${esc(p.name)}</strong><div class="muted">${esc(p.desc)}</div><div class="price">${money(services[selected].price+p.extra)}</div></div><span>${pkg===i?'🔘':'◯'}</span></div>`).join('')}<label class="field">เลือกวันที่<input id="date" type="date" min="${today()}" value="${date}" onchange="date=this.value;time='';render()"></label><div class="heading">เลือกเวลา</div><div class="slots">${times.map(t=>{let full=date&&bookings.some(b=>b.date===date&&b.time===t&&b.status!=='ยกเลิก');return `<button class="slot ${time===t?'selected':''}" ${full?'disabled':''} onclick="time='${t}';render()">${t}${full?'<div>เต็มแล้ว</div>':''}</button>`}).join('')}</div><button class="btn" onclick="if(!date||!time){alert('กรุณาเลือกวันและเวลา');return}nav('confirm')">ดำเนินการต่อ →</button></main>`
-}
-else if(page==='confirm'){
-h+=`<main class="content"><div class="heading">ยืนยันการจอง</div><div class="card"><strong>${esc(services[selected].name)} · ${esc(packages[pkg].name)}</strong><p>วันที่ ${esc(date)} เวลา ${esc(time)} น.</p><div class="price">ยอดรวม ${money(services[selected].price+packages[pkg].extra)}</div></div><label class="field">ชื่อผู้จอง<input id="customer" value="${esc(name)}" placeholder="ชื่อ-นามสกุล"></label><label class="field">เบอร์โทรศัพท์<input id="phone" type="tel" value="${esc(phone)}" placeholder="08xxxxxxxx"></label><button class="btn" onclick="submitBooking()">ยืนยันการจอง ♡</button></main>`
-}
-else if(page==='success'){
-h+=`<main class="content center"><div style="font-size:70px;color:var(--rose)">✓</div><div class="heading">จองสำเร็จ!</div><p>ขอบคุณที่ใช้บริการ ATAYA STUDIO ♡</p><div class="card"><div class="muted">หมายเลขคิว</div><div class="big">${esc(last?.id||'')}</div><p>${esc(last?.date||'')} · ${esc(last?.time||'')} น.</p><span class="pill">รอยืนยันจากร้าน</span></div><button class="btn" onclick="nav('bookings')">ดูรายการจอง</button><button class="btn outline" onclick="nav('home')">กลับหน้าหลัก</button></main>`
-}
-else if(page==='bookings'){
-h+=`<main class="content"><div class="heading">ประวัติการจอง</div>${bookings.length?bookings.slice().reverse().map(b=>`<div class="card"><div class="service"><strong>${esc(b.id)}</strong><span class="pill">${esc(b.status)}</span></div><p>${esc(b.service)} · ${esc(b.package)}</p><div class="muted">${esc(b.date)} · ${esc(b.time)} น.</div><p>${esc(b.name)} · ${esc(b.phone)}</p><div class="price">${money(b.price)}</div></div>`).join(''):'<div class="empty">ยังไม่มีรายการจอง</div>'}</main>`
-}
-else if(page==='admin'){
-let active=bookings.filter(b=>b.status!=='ยกเลิก');
-h+=`<main class="content"><div class="heading">⚙ แดชบอร์ดแอดมิน</div><div class="adminstat"><div class="card"><div class="muted">การจองทั้งหมด</div><strong>${bookings.length}</strong></div><div class="card"><div class="muted">คิวรอยืนยัน</div><strong>${bookings.filter(b=>b.status==='รอยืนยัน').length}</strong></div><div class="card"><div class="muted">คิววันนี้</div><strong>${active.filter(b=>b.date===today()).length}</strong></div><div class="card"><div class="muted">ยอดบริการเสร็จสิ้น</div><strong style="font-size:18px">${money(bookings.filter(b=>b.status==='เสร็จสิ้น').reduce((a,b)=>a+b.price,0))}</strong></div></div><div class="heading" style="margin-top:25px">จัดการคิว</div>${bookings.length?bookings.slice().reverse().map(b=>`<div class="card"><div class="service"><strong>${esc(b.id)}</strong><span class="pill">${esc(b.status)}</span></div><p>${esc(b.name)} · ${esc(b.phone)}</p><div>${esc(b.service)} / ${esc(b.package)}</div><p class="muted">${esc(b.date)} เวลา ${esc(b.time)} น.</p><div class="price">${money(b.price)}</div><p class="muted">เปลี่ยนสถานะ</p><div class="status">${statuses.map(st=>`<button class="${b.status===st?'active':''}" onclick="updateStatus('${b.id}','${st}')">${st}</button>`).join('')}</div></div>`).join(''):'<div class="empty">ยังไม่มีคิวจอง</div>'}<p class="muted">หมายเหตุ: เวอร์ชันสาธิตนี้เก็บข้อมูลในเบราว์เซอร์เครื่องนี้เท่านั้น และหน้าแอดมินยังไม่มีระบบรหัสผ่าน</p></main>`
-}
-root.innerHTML=h+foot()
-}
-function submitBooking(){
-name=document.getElementById('customer').value.trim();
-phone=document.getElementById('phone').value.trim();
-if(!name||!/^0\d{8,9}$/.test(phone)){
-alert('กรุณากรอกชื่อและเบอร์โทรศัพท์ให้ถูกต้อง');
-return
-}
-if(bookings.some(b=>b.date===date&&b.time===time&&b.status!=='ยกเลิก')){
-alert('ช่วงเวลานี้ถูกจองแล้ว');
-nav('schedule');
-return
-}
-let id='Q'+String(Date.now()).slice(-6);
-last={id,name,phone,date,time,service:services[selected].name,package:packages[pkg].name,price:services[selected].price+packages[pkg].extra,status:'รอยืนยัน'};
-bookings.push(last);
-save();
-nav('success')
-}
-function updateStatus(id,st){
-let b=bookings.find(x=>x.id===id);
-if(b){b.status=st;save();render()}
-}
-render();
-</script>
+  <div class="card">
+    <h1>ATAYA STUDIO</h1>
+
+    <p>กำลังเปิดระบบสมาชิก...</p>
+
+    <a href="./login.html">
+      สมัครสมาชิก / เข้าสู่ระบบ
+    </a>
+  </div>
 </body>
 </html>
