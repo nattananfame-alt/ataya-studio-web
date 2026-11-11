@@ -1,0 +1,282 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ATAYA STUDIO | สมาชิก</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Tahoma, sans-serif;
+      background: linear-gradient(135deg, #fff1f4, #f4d6df);
+      color: #64394a;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 22px;
+      padding: 28px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 12px 40px #74394d20;
+    }
+    h1 {
+      text-align: center;
+      font-family: Georgia, serif;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+    .sub {
+      text-align: center;
+      font-size: 12px;
+      letter-spacing: 2px;
+      margin-bottom: 28px;
+    }
+    h2 { font-size: 20px; }
+    label { display: block; margin-top: 15px; }
+    input {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #e9cbd4;
+      border-radius: 10px;
+      margin-top: 6px;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 13px;
+      margin-top: 14px;
+      border: none;
+      border-radius: 10px;
+      background: #b85f79;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .outline {
+      background: white;
+      color: #b85f79;
+      border: 1px solid #b85f79;
+    }
+    .message {
+      white-space: pre-wrap;
+      font-size: 14px;
+      margin-top: 15px;
+      text-align: center;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h1>ATAYA STUDIO</h1>
+  <div class="sub">BRIDAL & HIJAB BEAUTY</div>
+
+  <div id="authBox">
+    <h2 id="heading">เข้าสู่ระบบ</h2>
+
+    <div id="nameBox" class="hidden">
+      <label>ชื่อ-นามสกุล
+        <input id="fullName" autocomplete="name">
+      </label>
+      <label>เบอร์โทรศัพท์
+        <input id="phone" type="tel">
+      </label>
+    </div>
+
+    <label>อีเมล
+      <input id="email" type="email" autocomplete="email">
+    </label>
+
+    <label>รหัสผ่าน
+      <input id="password" type="password"
+             autocomplete="current-password">
+    </label>
+
+    <button id="submitBtn" onclick="submitAuth()">
+      เข้าสู่ระบบ
+    </button>
+
+    <button class="outline" onclick="toggleMode()"
+            id="toggleBtn">
+      สมัครสมาชิกใหม่
+    </button>
+  </div>
+
+  <div id="memberBox" class="hidden">
+    <h2>ยินดีต้อนรับ ♡</h2>
+    <p id="memberEmail"></p>
+
+    <button onclick="location.href='./index.html'">
+      ไปหน้าจองคิว
+    </button>
+
+    <button class="outline" onclick="logout()">
+      ออกจากระบบ
+    </button>
+  </div>
+
+  <div id="message" class="message" role="status"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL =
+  "https://ufhkfwtdxfbfydn.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_3Dn2_I08tOMAqUX1NvjKLw_HBCgqSID";
+
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+let signupMode = false;
+
+function el(id) {
+  return document.getElementById(id);
+}
+
+function message(text) {
+  el("message").textContent = text;
+}
+
+function toggleMode() {
+  signupMode = !signupMode;
+
+  el("heading").textContent =
+    signupMode ? "สมัครสมาชิก" : "เข้าสู่ระบบ";
+
+  el("nameBox").classList.toggle(
+    "hidden", !signupMode
+  );
+
+  el("submitBtn").textContent =
+    signupMode ? "ยืนยันสมัครสมาชิก" : "เข้าสู่ระบบ";
+
+  el("toggleBtn").textContent =
+    signupMode ? "มีบัญชีแล้ว? เข้าสู่ระบบ"
+               : "สมัครสมาชิกใหม่";
+
+  message("");
+}
+
+async function submitAuth() {
+  const email = el("email").value.trim();
+  const password = el("password").value;
+
+  if (!email || password.length < 6) {
+    message("กรุณากรอกอีเมลและรหัสผ่านอย่างน้อย 6 ตัวอักษร");
+    return;
+  }
+
+  el("submitBtn").disabled = true;
+  message("กำลังดำเนินการ...");
+
+  try {
+    if (signupMode) {
+      const fullName = el("fullName").value.trim();
+      const phone = el("phone").value.trim();
+
+      if (!fullName || !/^0\d{8,9}$/.test(phone)) {
+        message("กรุณากรอกชื่อและเบอร์โทรศัพท์ให้ถูกต้อง");
+        return;
+      }
+
+      const { data, error } = await db.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo:
+            location.origin +
+            location.pathname,
+          data: {
+            full_name: fullName,
+            phone: phone
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.session) {
+        await saveProfile(
+          data.user.id, fullName, phone
+        );
+        await showMember();
+      } else {
+        message(
+          "สมัครสมาชิกแล้ว กรุณาตรวจสอบอีเมลเพื่อยืนยันบัญชี จากนั้นกลับมาเข้าสู่ระบบ"
+        );
+      }
+
+    } else {
+      const { error } =
+        await db.auth.signInWithPassword({
+          email, password
+        });
+
+      if (error) throw error;
+
+      await showMember();
+    }
+
+  } catch (err) {
+    message("เกิดข้อผิดพลาด: " + err.message);
+  } finally {
+    el("submitBtn").disabled = false;
+  }
+}
+
+async function saveProfile(id, fullName, phone) {
+  const { error } = await db
+    .from("profiles")
+    .insert({
+      id: id,
+      full_name: fullName,
+      phone: phone
+    });
+
+  if (error) {
+    message(
+      "สมัครบัญชีสำเร็จ แต่บันทึกโปรไฟล์ไม่สำเร็จ: " +
+      error.message
+    );
+  }
+}
+
+async function showMember() {
+  const { data: { user } } =
+    await db.auth.getUser();
+
+  if (!user) return;
+
+  el("authBox").classList.add("hidden");
+  el("memberBox").classList.remove("hidden");
+  el("memberEmail").textContent = user.email;
+  message("");
+}
+
+async function logout() {
+  await db.auth.signOut();
+
+  el("memberBox").classList.add("hidden");
+  el("authBox").classList.remove("hidden");
+
+  message("ออกจากระบบแล้ว");
+}
+
+db.auth.getSession().then(({ data }) => {
+  if (data.session) showMember();
+});
+</script>
+
+</body>
+</html>
