@@ -4,21 +4,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ATAYA STUDIO | Bridal & Hijab Beauty</title>
+<title>ATAYA STUDIO | Booking</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#241B20">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="ATAYA STUDIO">
 <link rel="apple-touch-icon" href="./ataya-icon-512.png">
-<link rel="icon" type="image/png" href="./ataya-icon.png">
 <style>
-:root{--rose:#b85f79;--deep:#74394d;--pale:#fff1f4;--line:#eed8de}
+:root{--rose:#b85f79;--deep:#74394d;--line:#eed8de}
 *{box-sizing:border-box}
 body{margin:0;background:linear-gradient(140deg,#fff5f6,#f9e4e9);font-family:Tahoma,'Noto Sans Thai',sans-serif;color:#553d45}
-button,input,select{font:inherit}
+button,input{font:inherit}
 button{cursor:pointer}
-.app{max-width:480px;margin:auto;min-height:100dvh;background:#fffafb;box-shadow:0 0 40px #b85f7925;padding-bottom:80px}
+.app{max-width:480px;margin:auto;min-height:100dvh;background:#fffafb;box-shadow:0 0 40px #b85f7925;padding-bottom:85px}
 .hero{background:linear-gradient(130deg,#f9d9e1,#fff6f6);padding:35px 22px 26px;text-align:center}
 .brand{font:42px Georgia,serif;letter-spacing:4px;color:var(--deep)}
 .sub{font:12px Georgia,serif;letter-spacing:2px}
@@ -30,22 +26,24 @@ button{cursor:pointer}
 .service{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .price{font-weight:bold;color:var(--rose)}
 .btn{background:var(--rose);color:white;border:0;border-radius:12px;padding:13px 18px;width:100%;margin-top:12px}
+.btn:disabled{opacity:.5}
 .outline{background:white;border:1px solid var(--rose);color:var(--rose)}
 .small{width:auto;padding:8px 12px;margin:0}
 .tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(480px,100%);background:white;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:9px}
 .tabs button{background:none;border:0;color:#806a72;font-size:12px}
 .tabs button.active{color:var(--rose);font-weight:bold}
 .field{display:block;margin:14px 0;font-size:14px}
-.field input,.field select{width:100%;margin-top:6px;border:1px solid var(--line);border-radius:10px;padding:12px;background:white}
+.field input{width:100%;margin-top:6px;border:1px solid var(--line);border-radius:10px;padding:12px;background:white}
 .slots{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
 .slot{border:1px solid var(--line);background:white;padding:12px 5px;border-radius:10px}
 .slot.selected{background:var(--rose);color:white}
+.slot:disabled{opacity:.4}
 .pill{display:inline-block;background:#fce4eb;color:var(--deep);padding:6px 10px;border-radius:20px;font-size:12px}
 .status{display:flex;gap:6px;flex-wrap:wrap}
 .status button{border:1px solid var(--line);background:#fff;padding:6px;border-radius:8px;font-size:12px}
 .status button.active{background:var(--rose);color:white}
 .center{text-align:center}
-.big{font:52px Georgia,serif;color:var(--deep)}
+.big{font:25px Georgia,serif;color:var(--deep);overflow-wrap:anywhere}
 .empty{padding:35px;text-align:center;color:#9b8a90}
 .adminstat{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .adminstat .card{text-align:center;margin:0}
@@ -54,7 +52,14 @@ button{cursor:pointer}
 </head>
 <body>
 <div id="root" class="app"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
+const SUPABASE_URL='https://ufhkfwtdxfbfydnyoifn.supabase.co';
+const SUPABASE_KEY='sb_publishable_3Dn2_I08tOMAqUX1NvjKLw_HBCgqSID';
+const API=SUPABASE_URL+'/functions/v1/booking-api';
+const db=window.supabase?.createClient(SUPABASE_URL,SUPABASE_KEY);
+
 const services=[
 {name:'แต่งหน้าคลุมผม',desc:'ลุคสวยละมุน เหมาะกับทุกโอกาส',price:1590},
 {name:'แต่งหน้าเจ้าสาว',desc:'งานแต่ง งานพิธี และวันสำคัญ',price:2590},
@@ -70,40 +75,139 @@ const packages=[
 {name:'Luxury',extra:2000,desc:'แต่งหน้าคลุมผม + ทำผม + ดูแลลุค'}
 ];
 
-const times=['08:30','09:30','10:30','11:30','12:30','13:30','14:30','15:30','16:30'];
-const statuses=['รอยืนยัน','ยืนยันแล้ว','กำลังให้บริการ','เสร็จสิ้น','ยกเลิก'];
+const times=[
+'08:30','09:30','10:30','11:30','12:30',
+'13:30','14:30','15:30','16:30'
+];
 
-let bookings=JSON.parse(localStorage.getItem('veilora_bookings')||'[]');
+const statuses=[
+['pending','รอยืนยัน'],
+['confirmed','ยืนยันแล้ว'],
+['in_progress','กำลังให้บริการ'],
+['completed','เสร็จสิ้น'],
+['cancelled','ยกเลิก']
+];
 
 const isAdmin=sessionStorage.getItem('ataya_admin_demo')==='yes';
 
+let adminPin='';
+let bookings=[];
 let page=isAdmin?'admin':'home';
-let selected=0,pkg=0,date='',time='',name='',phone='',last=null;
+let selected=0,pkg=0,date='',time='',name='',phone='',last=null,loading=false;
 
 const root=document.getElementById('root');
 
-const save=()=>localStorage.setItem('veilora_bookings',JSON.stringify(bookings));
-const money=n=>n.toLocaleString('th-TH')+' ฿';
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({
+'&':'&amp;',
+'<':'&lt;',
+'>':'&gt;',
+'"':'&quot;',
+"'":'&#39;'
+}[c]));
+
+const money=n=>Number(n||0).toLocaleString('th-TH')+' ฿';
 
 const today=()=>{
-let d=new Date();
+const d=new Date();
 return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 };
 
+const label=s=>statuses.find(x=>x[0]===s)?.[1]||s;
+
+function normalize(b){
+return {
+...b,
+date:b.booking_date,
+time:String(b.booking_time||'').slice(0,5),
+name:b.customer_name,
+package:b.package_name,
+price:Number(b.price||0)
+};
+}
+
+async function callAPI(action,payload={},admin=false){
+const headers={
+'Content-Type':'application/json',
+'apikey':SUPABASE_KEY
+};
+
+if(!admin){
+if(!db)throw Error('โหลดระบบสมาชิกไม่สำเร็จ');
+
+const {data,error}=await db.auth.getSession();
+
+if(error||!data.session){
+throw Error('กรุณาเข้าสู่ระบบลูกค้าก่อน');
+}
+
+headers.Authorization='Bearer '+data.session.access_token;
+}
+
+const res=await fetch(API,{
+method:'POST',
+headers,
+body:JSON.stringify({
+action,
+...payload,
+...(admin?{pin:adminPin}:{})
+})
+});
+
+let out;
+try{
+out=await res.json();
+}catch{
+throw Error('เซิร์ฟเวอร์ไม่ตอบกลับ');
+}
+
+if(!res.ok){
+throw Error(out.error||'เกิดข้อผิดพลาด '+res.status);
+}
+
+return out;
+}
+
+async function refresh(){
+if(isAdmin&&!adminPin)return;
+
+try{
+loading=true;
+render();
+
+const out=await callAPI(
+isAdmin?'admin_list':'my_bookings',
+{},
+isAdmin
+);
+
+bookings=(out.bookings||[]).map(normalize);
+
+}catch(e){
+alert('โหลดรายการไม่สำเร็จ: '+e.message);
+if(isAdmin&&/รหัสแอดมิน/.test(e.message)){
+adminPin='';
+}
+}finally{
+loading=false;
+render();
+}
+}
+
 function nav(p){
-  if(p==='admin'&&!isAdmin){
-    alert('หน้านี้สำหรับผู้ดูแลร้านเท่านั้น');
-    return;
-  }
-  page=p;
-  render();
-  window.scrollTo(0,0);
+if(p==='admin'&&!isAdmin)return;
+page=p;
+render();
+window.scrollTo(0,0);
+
+if(p==='admin'||p==='bookings'||p==='schedule'){
+refresh();
+}
 }
 
 function logoutAdmin(){
-  sessionStorage.removeItem('ataya_admin_demo');
-  window.location.replace('./index.html');
+adminPin='';
+sessionStorage.removeItem('ataya_admin_demo');
+location.replace('./index.html');
 }
 
 function head(){
@@ -117,14 +221,15 @@ return `<div class="hero">
 
 function foot(){
 const items=isAdmin
-  ? [['admin','⚙','แดชบอร์ด'],['home','⌂','บริการ'],['bookings','▦','การจอง']]
-  : [['home','⌂','หน้าหลัก'],['bookings','▦','การจอง']];
+?[['admin','⚙','แดชบอร์ด'],['home','⌂','บริการ'],['bookings','▦','การจอง']]
+:[['home','⌂','หน้าหลัก'],['bookings','▦','การจอง']];
 
 return `<div class="tabs">
 ${items.map(([p,i,t])=>`
 <button class="${page===p?'active':''}" onclick="nav('${p}')">
 <div style="font-size:23px">${i}</div>${t}
-</button>`).join('')}
+</button>
+`).join('')}
 </div>`;
 }
 
@@ -143,12 +248,14 @@ ${services.map((s,i)=>`
 <div class="price">เริ่มต้น ${money(s.price)}</div>
 </div>
 <button class="btn small" onclick="selected=${i};nav('detail')">ดูบริการ</button>
-</div>`).join('')}
+</div>
+`).join('')}
 </main>`;
 }
 
 else if(page==='detail'){
 let s=services[selected];
+
 h+=`<main class="content">
 <button class="btn outline small" onclick="nav('home')">← กลับ</button>
 <div class="heading" style="margin-top:20px">${esc(s.name)}</div>
@@ -157,7 +264,7 @@ h+=`<main class="content">
 <div>${esc(s.desc)}</div>
 </div>
 <div class="heading">เริ่มต้น ${money(s.price)}</div>
-<p>บริการดูแลความงามสำหรับวันสำคัญ เลือกแพ็กเกจและช่วงเวลาที่สะดวกได้ด้วยตนเอง</p>
+<p>เลือกแพ็กเกจและช่วงเวลาที่สะดวกได้ด้วยตนเอง</p>
 <button class="btn" onclick="nav('schedule')">เลือกแพ็กเกจและวันเวลา →</button>
 </main>`;
 }
@@ -166,6 +273,7 @@ else if(page==='schedule'){
 h+=`<main class="content">
 <div class="heading">เลือกแพ็กเกจและจองวันเวลา</div>
 <div class="muted">${esc(services[selected].name)}</div>
+
 ${packages.map((p,i)=>`
 <div class="card service" onclick="pkg=${i};render()" style="border-color:${pkg===i?'#b85f79':''};cursor:pointer">
 <div>
@@ -174,18 +282,31 @@ ${packages.map((p,i)=>`
 <div class="price">${money(services[selected].price+p.extra)}</div>
 </div>
 <span>${pkg===i?'🔘':'◯'}</span>
-</div>`).join('')}
+</div>
+`).join('')}
+
 <label class="field">เลือกวันที่
-<input id="date" type="date" min="${today()}" value="${date}" onchange="date=this.value;time='';render()">
+<input type="date" min="${today()}" value="${esc(date)}" onchange="date=this.value;time='';render()">
 </label>
+
 <div class="heading">เลือกเวลา</div>
 <div class="slots">
 ${times.map(t=>{
-let full=date&&bookings.some(b=>b.date===date&&b.time===t&&b.status!=='ยกเลิก');
-return `<button class="slot ${time===t?'selected':''}" ${full?'disabled':''} onclick="time='${t}';render()">${t}${full?'<div>เต็มแล้ว</div>':''}</button>`;
+let full=date&&bookings.some(
+b=>b.date===date&&b.time===t&&b.status!=='cancelled'
+);
+
+return `<button class="slot ${time===t?'selected':''}" ${full?'disabled':''} onclick="time='${t}';render()">
+${t}${full?'<div>เต็มแล้ว</div>':''}
+</button>`;
 }).join('')}
 </div>
-<button class="btn" onclick="if(!date||!time){alert('กรุณาเลือกวันและเวลา');return}nav('confirm')">ดำเนินการต่อ →</button>
+
+<button class="btn" onclick="if(!date||!time){alert('กรุณาเลือกวันและเวลา');return}nav('confirm')">
+ดำเนินการต่อ →
+</button>
+
+<p class="muted">เวลาที่ว่างอาจเปลี่ยนแปลงได้ ระบบจะตรวจสอบอีกครั้งเมื่อยืนยัน</p>
 </main>`;
 }
 
@@ -197,27 +318,34 @@ h+=`<main class="content">
 <p>วันที่ ${esc(date)} เวลา ${esc(time)} น.</p>
 <div class="price">ยอดรวม ${money(services[selected].price+packages[pkg].extra)}</div>
 </div>
+
 <label class="field">ชื่อผู้จอง
 <input id="customer" value="${esc(name)}" placeholder="ชื่อ-นามสกุล">
 </label>
+
 <label class="field">เบอร์โทรศัพท์
 <input id="phone" type="tel" value="${esc(phone)}" placeholder="08xxxxxxxx">
 </label>
-<button class="btn" onclick="submitBooking()">ยืนยันการจอง ♡</button>
+
+<button class="btn" id="submitBtn" onclick="submitBooking()">
+ยืนยันการจอง ♡
+</button>
 </main>`;
 }
 
 else if(page==='success'){
 h+=`<main class="content center">
 <div style="font-size:70px;color:var(--rose)">✓</div>
-<div class="heading">จองสำเร็จ!</div>
-<p>ขอบคุณที่ใช้บริการ ATAYA STUDIO ♡</p>
+<div class="heading">ส่งคำขอจองสำเร็จ!</div>
+<p>รอแอดมินยืนยันคิว ATAYA STUDIO ♡</p>
+
 <div class="card">
-<div class="muted">หมายเลขคิว</div>
+<div class="muted">หมายเลขการจอง</div>
 <div class="big">${esc(last?.id||'')}</div>
 <p>${esc(last?.date||'')} · ${esc(last?.time||'')} น.</p>
 <span class="pill">รอยืนยันจากร้าน</span>
 </div>
+
 <button class="btn" onclick="nav('bookings')">ดูรายการจอง</button>
 <button class="btn outline" onclick="nav('home')">กลับหน้าหลัก</button>
 </main>`;
@@ -225,32 +353,56 @@ h+=`<main class="content center">
 
 else if(page==='bookings'){
 h+=`<main class="content">
-<div class="heading">ประวัติการจอง</div>
-${bookings.length?bookings.slice().reverse().map(b=>`
+<div class="heading">${isAdmin?'รายการจองทั้งหมด':'ประวัติการจองของฉัน'}</div>
+<button class="btn outline" onclick="refresh()">↻ โหลดข้อมูลล่าสุด</button>
+
+${loading
+?'<div class="empty">กำลังโหลด...</div>'
+:bookings.length
+?bookings.map(b=>`
 <div class="card">
 <div class="service">
-<strong>${esc(b.id)}</strong>
-<span class="pill">${esc(b.status)}</span>
+<strong>${esc(b.id.slice(0,8))}</strong>
+<span class="pill">${esc(label(b.status))}</span>
 </div>
 <p>${esc(b.service)} · ${esc(b.package)}</p>
 <div class="muted">${esc(b.date)} · ${esc(b.time)} น.</div>
 <p>${esc(b.name)} · ${esc(b.phone)}</p>
 <div class="price">${money(b.price)}</div>
-</div>`).join(''):'<div class="empty">ยังไม่มีรายการจอง</div>'}
+</div>
+`).join('')
+:'<div class="empty">ยังไม่มีรายการจอง</div>'}
 </main>`;
 }
 
 else if(page==='admin'){
 if(!isAdmin){
-  page='home';
-  render();
-  return;
+page='home';
+render();
+return;
 }
 
-let active=bookings.filter(b=>b.status!=='ยกเลิก');
+if(!adminPin){
+h+=`<main class="content">
+<div class="heading">🔒 ยืนยันสิทธิ์แอดมิน</div>
+<p>ใส่รหัสแอดมินใหม่ที่บันทึกใน Supabase Secrets (ไม่ใช่ 1234)</p>
+
+<label class="field">รหัสแอดมิน
+<input type="password" id="adminSecret" autocomplete="off">
+</label>
+
+<button class="btn" onclick="loginAdmin()">เข้าสู่ Dashboard</button>
+<button class="btn outline" onclick="logoutAdmin()">กลับหน้าแรก</button>
+</main>`;
+}
+
+else{
+const active=bookings.filter(b=>b.status!=='cancelled');
 
 h+=`<main class="content">
 <div class="heading">⚙ แดชบอร์ดแอดมิน</div>
+<button class="btn outline" onclick="refresh()">↻ โหลดข้อมูลล่าสุด</button>
+
 <div class="adminstat">
 <div class="card">
 <div class="muted">การจองทั้งหมด</div>
@@ -258,7 +410,7 @@ h+=`<main class="content">
 </div>
 <div class="card">
 <div class="muted">คิวรอยืนยัน</div>
-<strong>${bookings.filter(b=>b.status==='รอยืนยัน').length}</strong>
+<strong>${bookings.filter(b=>b.status==='pending').length}</strong>
 </div>
 <div class="card">
 <div class="muted">คิววันนี้</div>
@@ -266,88 +418,112 @@ h+=`<main class="content">
 </div>
 <div class="card">
 <div class="muted">ยอดบริการเสร็จสิ้น</div>
-<strong style="font-size:18px">${money(bookings.filter(b=>b.status==='เสร็จสิ้น').reduce((a,b)=>a+b.price,0))}</strong>
+<strong style="font-size:18px">${money(bookings.filter(b=>b.status==='completed').reduce((a,b)=>a+b.price,0))}</strong>
 </div>
 </div>
 
 <div class="heading" style="margin-top:25px">จัดการคิว</div>
 
-${bookings.length?bookings.slice().reverse().map(b=>`
+${loading
+?'<div class="empty">กำลังโหลด...</div>'
+:bookings.length
+?bookings.map(b=>`
 <div class="card">
 <div class="service">
-<strong>${esc(b.id)}</strong>
-<span class="pill">${esc(b.status)}</span>
+<strong>${esc(b.id.slice(0,8))}</strong>
+<span class="pill">${esc(label(b.status))}</span>
 </div>
 <p>${esc(b.name)} · ${esc(b.phone)}</p>
 <div>${esc(b.service)} / ${esc(b.package)}</div>
 <p class="muted">${esc(b.date)} เวลา ${esc(b.time)} น.</p>
 <div class="price">${money(b.price)}</div>
 <p class="muted">เปลี่ยนสถานะ</p>
+
 <div class="status">
-${statuses.map(st=>`
-<button class="${b.status===st?'active':''}" onclick="updateStatus('${b.id}','${st}')">${st}</button>
+${statuses.filter(x=>['pending','confirmed','cancelled'].includes(x[0])).map(([st,t])=>`
+<button class="${b.status===st?'active':''}" onclick="updateStatus('${esc(b.id)}','${st}')">${t}</button>
 `).join('')}
 </div>
-</div>`).join(''):'<div class="empty">ยังไม่มีคิวจอง</div>'}
+</div>
+`).join('')
+:'<div class="empty">ยังไม่มีคิวจอง</div>'}
 
 <button class="btn outline" onclick="logoutAdmin()">🔒 ออกจากระบบแอดมิน</button>
-
-<p class="muted">เวอร์ชันทดสอบ: ข้อมูลการจองเก็บแยกในแต่ละเบราว์เซอร์ และการแยกหน้าแอดมินยังเป็นเพียงการล็อกหน้าจอชั่วคราว</p>
 </main>`;
+}
 }
 
 root.innerHTML=h+foot();
 }
 
-function submitBooking(){
+async function loginAdmin(){
+const pin=document.getElementById('adminSecret')?.value||'';
+
+if(!pin){
+return alert('กรุณาใส่รหัสแอดมิน');
+}
+
+adminPin=pin;
+
+try{
+const out=await callAPI('admin_list',{},true);
+bookings=(out.bookings||[]).map(normalize);
+render();
+}catch(e){
+adminPin='';
+alert(e.message);
+}
+}
+
+async function submitBooking(){
 name=document.getElementById('customer').value.trim();
 phone=document.getElementById('phone').value.trim();
 
 if(!name||!/^0\d{8,9}$/.test(phone)){
-alert('กรุณากรอกชื่อและเบอร์โทรศัพท์ให้ถูกต้อง');
-return;
+return alert('กรุณากรอกชื่อและเบอร์โทรศัพท์ให้ถูกต้อง');
 }
 
-if(bookings.some(b=>b.date===date&&b.time===time&&b.status!=='ยกเลิก')){
-alert('ช่วงเวลานี้ถูกจองแล้ว');
-nav('schedule');
-return;
-}
+const btn=document.getElementById('submitBtn');
+btn.disabled=true;
+btn.textContent='กำลังบันทึกการจอง...';
 
-let id='Q'+String(Date.now()).slice(-6);
-
-last={
-id,
-name,
+try{
+const out=await callAPI('create_booking',{
+customer_name:name,
 phone,
-date,
-time,
 service:services[selected].name,
-package:packages[pkg].name,
-price:services[selected].price+packages[pkg].extra,
-status:'รอยืนยัน'
-};
+package_name:packages[pkg].name,
+booking_date:date,
+booking_time:time,
+price:services[selected].price+packages[pkg].extra
+});
 
-bookings.push(last);
-save();
+last=normalize(out.booking);
+bookings.unshift(last);
 nav('success');
+
+}catch(e){
+alert('จองไม่สำเร็จ: '+e.message);
+btn.disabled=false;
+btn.textContent='ยืนยันการจอง ♡';
+}
 }
 
-function updateStatus(id,st){
-if(!isAdmin){
-  alert('เฉพาะผู้ดูแลร้านเท่านั้น');
-  return;
+async function updateStatus(id,status){
+if(!isAdmin||!adminPin){
+return alert('กรุณาเข้าสู่ระบบแอดมิน');
 }
 
-let b=bookings.find(x=>x.id===id);
-if(b){
-  b.status=st;
-  save();
-  render();
+try{
+await callAPI('admin_update',{id,status},true);
+await refresh();
+}catch(e){
+alert('เปลี่ยนสถานะไม่สำเร็จ: '+e.message);
 }
 }
 
 render();
+if(!isAdmin)refresh();
 </script>
 </body>
 </html>
