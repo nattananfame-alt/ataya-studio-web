@@ -2,84 +2,291 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATAYA STUDIO | Welcome</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./ataya-icon-512.png">
+<meta name="theme-color" content="#74394d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ATAYA STUDIO">
 
-  <title>ATAYA STUDIO</title>
+<style>
+*{box-sizing:border-box}
 
-  <meta name="theme-color" content="#74394d">
+body{
+  margin:0;
+  min-height:100dvh;
+  font-family:Tahoma,Arial,sans-serif;
+  background:linear-gradient(145deg,#fff5f7,#f5dce4);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  color:#633b4b;
+}
 
-  <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="apple-touch-icon"
-        href="./ataya-icon-512.png">
+.container{
+  width:100%;
+  max-width:430px;
+  background:#fffafb;
+  border-radius:28px;
+  padding:36px 24px;
+  text-align:center;
+  box-shadow:0 15px 45px #74394d20;
+}
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+.logo{
+  font-size:38px;
+  margin-bottom:12px;
+}
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(
-        135deg,
-        #fff1f4,
-        #f4d6df
-      );
-      font-family: Tahoma, sans-serif;
-      color: #74394d;
-      text-align: center;
-    }
+h1{
+  font-family:Georgia,serif;
+  font-size:34px;
+  letter-spacing:2px;
+  margin:8px 0;
+  color:#74394d;
+}
 
-    .card {
-      width: 90%;
-      max-width: 400px;
-      background: white;
-      padding: 35px 25px;
-      border-radius: 22px;
-      box-shadow: 0 12px 35px #74394d20;
-    }
+.subtitle{
+  font-family:Georgia,serif;
+  font-size:11px;
+  letter-spacing:3px;
+}
 
-    h1 {
-      font-family: Georgia, serif;
-      letter-spacing: 3px;
-      font-size: 30px;
-    }
+.welcome{
+  font-size:19px;
+  font-weight:bold;
+  margin-top:35px;
+}
 
-    p {
-      font-size: 14px;
-      line-height: 1.8;
-    }
+.description{
+  font-size:14px;
+  color:#9b7b88;
+  margin:10px 0 28px;
+}
 
-    a {
-      display: block;
-      padding: 14px;
-      margin-top: 20px;
-      background: #b85f79;
-      color: white;
-      text-decoration: none;
-      border-radius: 12px;
-    }
-  </style>
+.choice{
+  width:100%;
+  border:1px solid #ecd0da;
+  background:white;
+  border-radius:18px;
+  padding:22px 16px;
+  margin:12px 0;
+  text-align:center;
+  cursor:pointer;
+  color:#74394d;
+}
 
-  <script>
-    window.location.replace("./login.html");
-  </script>
+.choice:active{
+  transform:scale(.98);
+}
+
+.choice .icon{
+  font-size:32px;
+  margin-bottom:8px;
+}
+
+.choice strong{
+  display:block;
+  font-size:18px;
+  margin-bottom:8px;
+}
+
+.choice span{
+  display:block;
+  font-size:13px;
+  color:#9b7b88;
+}
+
+.customer{
+  background:#b85f79;
+  color:white;
+  border-color:#b85f79;
+}
+
+.customer span{
+  color:#fff0f4;
+}
+
+.footer{
+  margin-top:28px;
+  font-size:12px;
+  color:#ad919b;
+}
+
+.overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:#241b20a8;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:100;
+}
+
+.dialog{
+  width:100%;
+  max-width:350px;
+  background:#fffafb;
+  border-radius:24px;
+  padding:28px 22px;
+  text-align:center;
+}
+
+.dialog h2{
+  color:#74394d;
+  margin:12px 0;
+}
+
+.dialog input{
+  width:100%;
+  border:1px solid #ecd0da;
+  border-radius:12px;
+  padding:15px;
+  font-size:23px;
+  text-align:center;
+  letter-spacing:8px;
+  margin:12px 0;
+}
+
+.btn{
+  width:100%;
+  border:0;
+  border-radius:12px;
+  padding:14px;
+  margin-top:10px;
+  background:#b85f79;
+  color:white;
+  font-size:15px;
+  cursor:pointer;
+}
+
+.cancel{
+  background:white;
+  color:#74394d;
+  border:1px solid #ecd0da;
+}
+
+.error{
+  color:#c83e52;
+  font-size:13px;
+  min-height:20px;
+}
+</style>
 </head>
 
 <body>
-  <div class="card">
-    <h1>ATAYA STUDIO</h1>
 
-    <p>กำลังเปิดระบบสมาชิก...</p>
+<div class="container">
+  <div class="logo">♕ ♡</div>
 
-    <a href="./login.html">
-      สมัครสมาชิก / เข้าสู่ระบบ
-    </a>
+  <h1>ATAYA STUDIO</h1>
+
+  <div class="subtitle">
+    BRIDAL & HIJAB BEAUTY
   </div>
+
+  <div class="welcome">
+    ยินดีต้อนรับ ♡
+  </div>
+
+  <div class="description">
+    กรุณาเลือกประเภทการเข้าสู่ระบบ
+  </div>
+
+  <button class="choice customer" onclick="customerLogin()">
+    <div class="icon">♡</div>
+    <strong>เข้าสู่ระบบสำหรับลูกค้า</strong>
+    <span>สมัครสมาชิก · เข้าสู่ระบบ · จองคิว</span>
+  </button>
+
+  <button class="choice" onclick="showAdminLogin()">
+    <div class="icon">♕</div>
+    <strong>เข้าสู่ระบบสำหรับแอดมิน</strong>
+    <span>จัดการคิวและ Dashboard ของร้าน</span>
+  </button>
+
+  <div class="footer">
+    ATAYA STUDIO © 2026
+  </div>
+</div>
+
+<div class="overlay" id="adminOverlay">
+  <div class="dialog">
+    <div style="font-size:40px">🔐</div>
+
+    <h2>ADMIN ACCESS</h2>
+
+    <p>กรุณากรอกรหัสผ่านแอดมิน</p>
+
+    <form id="adminForm">
+      <input
+        type="password"
+        id="adminPin"
+        inputmode="numeric"
+        maxlength="4"
+        placeholder="••••"
+        autocomplete="off"
+        required
+      >
+
+      <div class="error" id="error"></div>
+
+      <button class="btn" type="submit">
+        เข้าสู่ Dashboard
+      </button>
+
+      <button
+        class="btn cancel"
+        type="button"
+        onclick="closeAdminLogin()"
+      >
+        ยกเลิก
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+const ADMIN_PIN='1234';
+
+function customerLogin(){
+  window.location.href='./login.html';
+}
+
+function showAdminLogin(){
+  document.getElementById('adminOverlay')
+    .style.display='flex';
+
+  document.getElementById('adminPin').value='';
+  document.getElementById('error').textContent='';
+}
+
+function closeAdminLogin(){
+  document.getElementById('adminOverlay')
+    .style.display='none';
+}
+
+document.getElementById('adminForm')
+  .addEventListener('submit',function(event){
+    event.preventDefault();
+
+    const pin=document.getElementById('adminPin').value;
+
+    if(pin===ADMIN_PIN){
+      sessionStorage.setItem('ataya_admin_demo','yes');
+      window.location.href='./booking.html';
+    }else{
+      document.getElementById('error')
+        .textContent='รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่';
+
+      document.getElementById('adminPin').value='';
+    }
+  });
+</script>
+
 </body>
 </html>
