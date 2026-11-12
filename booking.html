@@ -210,6 +210,24 @@ sessionStorage.removeItem('ataya_admin_demo');
 location.replace('./index.html');
 }
 
+async function logoutCustomer(){
+if(!confirm('ต้องการออกจากระบบใช่ไหม?'))return;
+
+try{
+if(!db)throw Error('ไม่สามารถเชื่อมต่อระบบสมาชิกได้');
+
+const {error}=await db.auth.signOut();
+if(error)throw error;
+
+bookings=[];
+sessionStorage.removeItem('ataya_admin_demo');
+location.replace('./index.html');
+
+}catch(e){
+alert('ออกจากระบบไม่สำเร็จ: '+e.message);
+}
+}
+
 function head(){
 return `<div class="hero">
 <div style="font-size:24px">♕ ♡</div>
@@ -362,7 +380,7 @@ ${loading
 ?bookings.map(b=>`
 <div class="card">
 <div class="service">
-<strong>${esc(b.id.slice(0,8))}</strong>
+<strong>${esc(String(b.id).slice(0,8))}</strong>
 <span class="pill">${esc(label(b.status))}</span>
 </div>
 <p>${esc(b.service)} · ${esc(b.package)}</p>
@@ -372,6 +390,11 @@ ${loading
 </div>
 `).join('')
 :'<div class="empty">ยังไม่มีรายการจอง</div>'}
+
+${!isAdmin?`
+<button class="btn outline" onclick="logoutCustomer()">
+🔒 ออกจากระบบลูกค้า
+</button>`:''}
 </main>`;
 }
 
@@ -385,7 +408,7 @@ return;
 if(!adminPin){
 h+=`<main class="content">
 <div class="heading">🔒 ยืนยันสิทธิ์แอดมิน</div>
-<p>ใส่รหัสแอดมินใหม่ที่บันทึกใน Supabase Secrets (ไม่ใช่ 1234)</p>
+<p>ใส่รหัสแอดมินที่บันทึกใน Supabase Secrets</p>
 
 <label class="field">รหัสแอดมิน
 <input type="password" id="adminSecret" autocomplete="off">
@@ -430,7 +453,7 @@ ${loading
 ?bookings.map(b=>`
 <div class="card">
 <div class="service">
-<strong>${esc(b.id.slice(0,8))}</strong>
+<strong>${esc(String(b.id).slice(0,8))}</strong>
 <span class="pill">${esc(label(b.status))}</span>
 </div>
 <p>${esc(b.name)} · ${esc(b.phone)}</p>
