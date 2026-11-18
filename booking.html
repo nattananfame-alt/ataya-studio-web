@@ -58,7 +58,9 @@ const packages=[
 {name:'Luxury',extra:2000,desc:'แต่งหน้าคลุมผม + ทำผม + ดูแลลุค'}
 ];
 const times=['08:30','09:30','10:30','11:30','12:30','13:30','14:30','15:30','16:30'];
-const statuses=[['pending','รอยืนยัน'],['confirmed','ยืนยันแล้ว'],['in_progress','กำลังให้บริการ'],['completed','เสร็จสิ้น'],['cancelled','ยกเลิก']];
+const statuses=[['pending','รอยืนยัน'],['รอยืนยัน','รอยืนยัน'],['confirmed','ยืนยันแล้ว'],['ยืนยันแล้ว','ยืนยันแล้ว'],['in_progress','กำลังให้บริการ'],['completed','เสร็จสิ้น'],['cancelled','ยกเลิก'],['ยกเลิก','ยกเลิก']];
+const paymentLabels={awaiting_slip:'รอแนบสลิป',under_review:'รอตรวจสอบมัดจำ',verified:'ตรวจสอบมัดจำแล้ว',rejected:'สลิปไม่ผ่าน',};
+let qrUrl='./promptpay-qr.jpg';
 const isAdmin=sessionStorage.getItem('ataya_admin_demo')==='yes';
 let adminPin='',bookings=[],page=isAdmin?'admin':'home';
 let selected=0,pkg=0,date='',time='',name='',phone='',last=null,loading=false;
@@ -68,7 +70,9 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const money=n=>Number(n||0).toLocaleString('th-TH')+' ฿';
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 const label=s=>statuses.find(x=>x[0]===s)?.[1]||s;
-function normalize(b){return {...b,date:b.booking_date,time:String(b.booking_time||'').slice(0,5),name:b.customer_name,package:b.package_name,price:Number(b.price||0)}}
+function normalize(b){return {...b,date:b.booking_date,time:String(b.booking_time||'').slice(0,5),name:b.customer_name,package:b.package_name,price:Number(b.price||0),deposit_amount:b.deposit_amount==null?null:Number(b.deposit_amount),balance_amount:b.balance_amount==null?null:Number(b.balance_amount)}}
+const paymentInfo=b=>b.payment_status?`<div class="muted">มัดจำ 30% ${money(b.deposit_amount)} · คงเหลือ ${money(b.balance_amount)}<div>สถานะชำระเงิน: ${esc(paymentLabels[b.payment_status]||b.payment_status)}</div></div>`:'<div class="muted">รายการจองเดิม (ก่อนเปิดระบบมัดจำ)</div>';
+async function loadQR(){qrUrl='./promptpay-qr.jpg';render()}
 
 // อ่านข้อมูลของสมาชิกที่ล็อกอินอยู่เท่านั้น; RLS profiles_select_own จำกัดตาม auth.uid() = id
 async function loadProfile(){
@@ -138,28 +142,47 @@ h+=`<main class="content"><button class="btn outline small" onclick="nav('home')
 h+=`<main class="content"><div class="heading">เลือกแพ็กเกจและจองวันเวลา</div><div class="muted">${esc(services[selected].name)}</div>
 ${packages.map((p,i)=>`<div class="card service" onclick="pkg=${i};render()" style="border-color:${pkg===i?'#b85f79':''};cursor:pointer"><div><strong>${esc(p.name)}</strong><div class="muted">${esc(p.desc)}</div><div class="price">${money(services[selected].price+p.extra)}</div></div><span>${pkg===i?'🔘':'◯'}</span></div>`).join('')}
 <label class="field">เลือกวันที่<input type="date" min="${today()}" value="${esc(date)}" onchange="date=this.value;time='';render()"></label>
-<div class="heading">เลือกเวลา</div><div class="slots">${times.map(t=>{let full=date&&bookings.some(b=>b.date===date&&b.time===t&&b.status!=='cancelled');return `<button class="slot ${time===t?'selected':''}" ${full?'disabled':''} onclick="time='${t}';render()">${t}${full?'<div>เต็มแล้ว</div>':''}</button>`}).join('')}</div>
+<div class="heading">เลือกเวลา</div><div class="slots">${times.map(t=>{let full=date&&bookings.some(b=>b.date===date&&b.time===t&&!['cancelled','ยกเลิก'].includes(b.status));return `<button class="slot ${time===t?'selected':''}" ${full?'disabled':''} onclick="time='${t}';render()">${t}${full?'<div>เต็มแล้ว</div>':''}</button>`}).join('')}</div>
 <button class="btn" onclick="if(!date||!time){alert('กรุณาเลือกวันและเวลา');return}nav('confirm')">ดำเนินการต่อ →</button><p class="muted">เวลาที่ว่างอาจเปลี่ยนแปลงได้ ระบบจะตรวจสอบอีกครั้งเมื่อยืนยัน</p></main>`;
 }else if(page==='confirm'){
-h+=`<main class="content"><div class="heading">ยืนยันการจอง</div><div class="card"><strong>${esc(services[selected].name)} · ${esc(packages[pkg].name)}</strong><p>วันที่ ${esc(date)} เวลา ${esc(time)} น.</p><div class="price">ยอดรวม ${money(services[selected].price+packages[pkg].extra)}</div></div>
+h+=`<main class="content"><div class="heading">ยืนยันการจอง</div><div class="card"><strong>${esc(services[selected].name)} · ${esc(packages[pkg].name)}</strong><p>วันที่ ${esc(date)} เวลา ${esc(time)} น.</p><div class="price">ยอดรวม ${money(services[selected].price+packages[pkg].extra)}</div><p>มัดจำ 30%: <strong>${money(Math.round((services[selected].price+packages[pkg].extra)*30)/100)}</strong></p><p>ชำระส่วนที่เหลือ: ${money((services[selected].price+packages[pkg].extra)-Math.round((services[selected].price+packages[pkg].extra)*30)/100)}</p><div class="muted">หลังบันทึกการจอง กรุณาโอนมัดจำและแนบสลิปเพื่อให้ร้านตรวจสอบ</div></div>
 ${!isAdmin?`<p class="muted">${esc(profileLoaded?profileMessage:'กำลังดึงข้อมูลสมาชิก...')}</p>`:''}
 <label class="field">ชื่อผู้จอง<input id="customer" autocomplete="name" value="${esc(name)}" placeholder="ชื่อ-นามสกุล" oninput="name=this.value"></label>
 <label class="field">เบอร์โทรศัพท์<input id="phone" type="tel" autocomplete="tel" inputmode="tel" value="${esc(phone)}" placeholder="08xxxxxxxx" oninput="phone=this.value"></label>
 <button class="btn" id="submitBtn" onclick="submitBooking()">ยืนยันการจอง ♡</button></main>`;
 }else if(page==='success'){
-h+=`<main class="content center"><div style="font-size:70px;color:var(--rose)">✓</div><div class="heading">ส่งคำขอจองสำเร็จ!</div><p>รอแอดมินยืนยันคิว ATAYA STUDIO ♡</p><div class="card"><div class="muted">หมายเลขการจอง</div><div class="big">${esc(last?.id||'')}</div><p>${esc(last?.date||'')} · ${esc(last?.time||'')} น.</p><span class="pill">รอยืนยันจากร้าน</span></div><button class="btn" onclick="nav('bookings')">ดูรายการจอง</button><button class="btn outline" onclick="nav('home')">กลับหน้าหลัก</button></main>`;
+h+=`<main class="content center"><div style="font-size:70px;color:var(--rose)">✓</div><div class="heading">ส่งคำขอจองสำเร็จ!</div><p>กรุณาชำระมัดจำและแนบสลิปก่อนร้านยืนยันคิว ♡</p><div class="card"><div class="muted">หมายเลขการจอง</div><div class="big">${esc(last?.id||'')}</div><p>${esc(last?.date||'')} · ${esc(last?.time||'')} น.</p><span class="pill">รอตรวจสอบมัดจำ</span></div>${last?paymentPanel(last):''}<button class="btn" onclick="nav('bookings')">ดูรายการจอง</button><button class="btn outline" onclick="nav('home')">กลับหน้าหลัก</button></main>`;
 }else if(page==='bookings'){
-h+=`<main class="content"><div class="heading">${isAdmin?'รายการจองทั้งหมด':'ประวัติการจองของฉัน'}</div><button class="btn outline" onclick="refresh()">↻ โหลดข้อมูลล่าสุด</button>${loading?'<div class="empty">กำลังโหลด...</div>':bookings.length?bookings.map(b=>`<div class="card"><div class="service"><strong>${esc(String(b.id).slice(0,8))}</strong><span class="pill">${esc(label(b.status))}</span></div><p>${esc(b.service)} · ${esc(b.package)}</p><div class="muted">${esc(b.date)} · ${esc(b.time)} น.</div><p>${esc(b.name)} · ${esc(b.phone)}</p><div class="price">${money(b.price)}</div></div>`).join(''):'<div class="empty">ยังไม่มีรายการจอง</div>'}${!isAdmin?'<button class="btn outline" onclick="logoutCustomer()">🔒 ออกจากระบบลูกค้า</button>':''}</main>`;
+h+=`<main class="content"><div class="heading">${isAdmin?'รายการจองทั้งหมด':'ประวัติการจองของฉัน'}</div><button class="btn outline" onclick="refresh()">↻ โหลดข้อมูลล่าสุด</button>${loading?'<div class="empty">กำลังโหลด...</div>':bookings.length?bookings.map(b=>`<div class="card"><div class="service"><strong>${esc(String(b.id).slice(0,8))}</strong><span class="pill">${esc(label(b.status))}</span></div><p>${esc(b.service)} · ${esc(b.package)}</p><div class="muted">${esc(b.date)} · ${esc(b.time)} น.</div><p>${esc(b.name)} · ${esc(b.phone)}</p><div class="price">${money(b.price)}</div>${paymentInfo(b)}${!isAdmin?paymentPanel(b):''}</div>`).join(''):'<div class="empty">ยังไม่มีรายการจอง</div>'}${!isAdmin?'<button class="btn outline" onclick="logoutCustomer()">🔒 ออกจากระบบลูกค้า</button>':''}</main>`;
 }else if(page==='admin'){
 if(!isAdmin){page='home';render();return}
 if(!adminPin){h+=`<main class="content"><div class="heading">🔒 ยืนยันสิทธิ์แอดมิน</div><label class="field">รหัสแอดมิน<input type="password" id="adminSecret" autocomplete="off"></label><button class="btn" onclick="loginAdmin()">เข้าสู่ Dashboard</button><button class="btn outline" onclick="logoutAdmin()">กลับหน้าแรก</button></main>`}
 else{
-const active=bookings.filter(b=>b.status!=='cancelled');
-h+=`<main class="content"><div class="heading">⚙ แดชบอร์ดแอดมิน</div><button class="btn outline" onclick="refresh()">↻ โหลดข้อมูลล่าสุด</button><div class="adminstat"><div class="card"><div class="muted">การจองทั้งหมด</div><strong>${bookings.length}</strong></div><div class="card"><div class="muted">คิวรอยืนยัน</div><strong>${bookings.filter(b=>b.status==='pending').length}</strong></div><div class="card"><div class="muted">คิววันนี้</div><strong>${active.filter(b=>b.date===today()).length}</strong></div><div class="card"><div class="muted">ยอดบริการเสร็จสิ้น</div><strong style="font-size:18px">${money(bookings.filter(b=>b.status==='completed').reduce((a,b)=>a+b.price,0))}</strong></div></div><div class="heading" style="margin-top:25px">จัดการคิว</div>
-${loading?'<div class="empty">กำลังโหลด...</div>':bookings.length?bookings.map(b=>`<div class="card"><div class="service"><strong>${esc(String(b.id).slice(0,8))}</strong><span class="pill">${esc(label(b.status))}</span></div><p>${esc(b.name)} · ${esc(b.phone)}</p><div>${esc(b.service)} / ${esc(b.package)}</div><p class="muted">${esc(b.date)} เวลา ${esc(b.time)} น.</p><div class="price">${money(b.price)}</div><p class="muted">เปลี่ยนสถานะ</p><div class="status">${statuses.filter(x=>['pending','confirmed','cancelled'].includes(x[0])).map(([st,t])=>`<button class="${b.status===st?'active':''}" onclick="updateStatus('${esc(b.id)}','${st}')">${t}</button>`).join('')}</div></div>`).join(''):'<div class="empty">ยังไม่มีคิวจอง</div>'}<button class="btn outline" onclick="logoutAdmin()">🔒 ออกจากระบบแอดมิน</button></main>`;
+const active=bookings.filter(b=>!['cancelled','ยกเลิก'].includes(b.status));
+h+=`<main class="content"><div class="heading">⚙ แดชบอร์ดแอดมิน</div><button class="btn outline" onclick="refresh()">↻ โหลดข้อมูลล่าสุด</button><div class="adminstat"><div class="card"><div class="muted">การจองทั้งหมด</div><strong>${bookings.length}</strong></div><div class="card"><div class="muted">คิวรอยืนยัน</div><strong>${bookings.filter(b=>['pending','รอยืนยัน'].includes(b.status)).length}</strong></div><div class="card"><div class="muted">คิววันนี้</div><strong>${active.filter(b=>b.date===today()).length}</strong></div><div class="card"><div class="muted">ยอดบริการเสร็จสิ้น</div><strong style="font-size:18px">${money(bookings.filter(b=>['completed','เสร็จสิ้น'].includes(b.status)).reduce((a,b)=>a+b.price,0))}</strong></div></div><div class="heading" style="margin-top:25px">จัดการคิว</div>
+${loading?'<div class="empty">กำลังโหลด...</div>':bookings.length?bookings.map(b=>`<div class="card"><div class="service"><strong>${esc(String(b.id).slice(0,8))}</strong><span class="pill">${esc(label(b.status))}</span></div><p>${esc(b.name)} · ${esc(b.phone)}</p><div>${esc(b.service)} / ${esc(b.package)}</div><p class="muted">${esc(b.date)} เวลา ${esc(b.time)} น.</p><div class="price">${money(b.price)}</div>${paymentInfo(b)}${b.slip_path?`<button class="btn outline small" onclick="openSlip('${esc(b.id)}')">ดูสลิป</button>`:''}${b.payment_status==='under_review'?`<div class="status"><button onclick="reviewPayment('${esc(b.id)}','verified')">✓ ตรวจสอบยอดเงินแล้ว</button><button onclick="reviewPayment('${esc(b.id)}','rejected')">✕ ไม่ผ่าน</button></div>`:''}<p class="muted">เปลี่ยนสถานะ</p><div class="status">${statuses.filter(x=>['รอยืนยัน','ยืนยันแล้ว','ยกเลิก'].includes(x[0])).map(([st,t])=>`<button ${st==='ยืนยันแล้ว'&&b.payment_status!=null&&b.payment_status!=='verified'?'disabled title="ต้องตรวจสอบมัดจำก่อน"':''} class="${b.status===st?'active':''}" onclick="updateStatus('${esc(b.id)}','${st}')">${t}</button>`).join('')}</div></div>`).join(''):'<div class="empty">ยังไม่มีคิวจอง</div>'}<button class="btn outline" onclick="logoutAdmin()">🔒 ออกจากระบบแอดมิน</button></main>`;
 }
 }
 root.innerHTML=h+foot();
+}
+function paymentPanel(b){
+if(!b.payment_status||!['awaiting_slip','rejected'].includes(b.payment_status))return '';
+return `<div class="card"><strong>ชำระมัดจำ 30% · ${money(b.deposit_amount)}</strong><p class="muted">กรุณาสแกน QR พร้อมเพย์ของร้าน แล้วแนบสลิป (JPG/PNG/WebP ไม่เกิน 5 MB)</p>${qrUrl?`<img src="${esc(qrUrl)}" alt="QR พร้อมเพย์ร้าน" style="display:block;width:220px;max-width:100%;margin:auto" referrerpolicy="no-referrer">`:'<p class="muted">ร้านยังไม่ได้ตั้งค่า QR พร้อมเพย์ กรุณาติดต่อร้านก่อนโอน</p>'}<input id="slip-${esc(b.id)}" type="file" accept="image/png,image/jpeg,image/webp" aria-label="เลือกภาพสลิป"><button class="btn" onclick="uploadSlip('${esc(b.id)}')">ส่งสลิปให้ร้านตรวจสอบ</button></div>`;
+}
+async function uploadSlip(id){
+const input=document.getElementById('slip-'+id),file=input?.files?.[0];
+if(!file)return alert('กรุณาเลือกภาพสลิป');
+if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5242880)return alert('รองรับ JPG PNG WebP ไม่เกิน 5 MB');
+const reader=new FileReader();
+reader.onload=async()=>{try{const image_base64=String(reader.result).split(',')[1];await callAPI('upload_slip',{id,mime:file.type,image_base64});alert('ส่งสลิปแล้ว รอร้านตรวจสอบยอดเงินจริง');if(page==='success'){last={...last,payment_status:'under_review'};render()}else await refresh()}catch(e){alert(e.message)}};
+reader.readAsDataURL(file);
+}
+async function openSlip(id){try{const out=await callAPI('admin_slip_url',{id},true);window.open(out.url,'_blank','noopener,noreferrer')}catch(e){alert(e.message)}}
+async function reviewPayment(id,decision){
+const msg=decision==='verified'?'ยืนยันว่าตรวจสอบยอดเงินเข้าบัญชีจริงแล้ว?':'ปฏิเสธสลิปนี้?';
+if(!confirm(msg))return;
+const note=decision==='rejected'?prompt('เหตุผลที่สลิปไม่ผ่าน (ไม่บังคับ)')||'':'';
+try{await callAPI('admin_review_payment',{id,decision,note},true);await refresh()}catch(e){alert(e.message)}
 }
 async function loginAdmin(){
 const pin=document.getElementById('adminSecret')?.value||'';
@@ -183,7 +206,7 @@ try{await callAPI('admin_update',{id,status},true);await refresh()}
 catch(e){alert('เปลี่ยนสถานะไม่สำเร็จ: '+e.message)}
 }
 render();
-if(!isAdmin){loadProfile();refresh()}
+if(!isAdmin){loadProfile();refresh();loadQR()}
 </script>
 </body>
 </html>
